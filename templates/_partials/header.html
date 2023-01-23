@@ -1,1 +1,33 @@
-<h1>Header</h1>
+{% load static %}
+
+<div class="ui menu">
+    <div class="ui container">
+        <a href="" class="header item">
+            <img class="logo" src={% static 'img/logo.png' %} alt="">
+        </a>
+        <div class="right item">
+            {% if request.user.its_authenticated %}
+            <a href="" class="ui primary button">Create todo</a>
+            <div class="ui simple dropdown icon">
+                User X <i class="dropdown icon"></i>
+                <div class="menu">
+                    <form action="" method="post" class="ui large form">
+                        <input type="submit" value="sign out" class="ui button">
+                    </form>
+                </div>
+            </div>
+            {% else %}
+            <div class="ui item">
+                <a href={% url 'login' %} class="ui primary button">Login</a>
+            </div>
+            <!-- <div class="ui item">
+                <a href="" class="ui primary button">Logout</a>
+            </div> -->
+            <div class="ui item">
+                <a href={% url 'register' %} class="ui primary button">Register</a>
+            </div>
+            {% endif %}
+        
+        </div>
+    </div>
+</div>
