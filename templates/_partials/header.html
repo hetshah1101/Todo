@@ -6,8 +6,8 @@
             <img class="logo" src={% static 'img/logo.png' %} alt="">
         </a>
         <div class="right item">
+            <a href={% url 'create-todo' %} class="ui primary button">Create todo</a>
             {% if request.user.its_authenticated %}
-            <a href="" class="ui primary button">Create todo</a>
             <div class="ui simple dropdown icon">
                 User X <i class="dropdown icon"></i>
                 <div class="menu">

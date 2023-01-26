@@ -10,8 +10,10 @@
 <body>
     <div>
         {% include '_partials/header.html' %}
-        {% block content %}
-        {% endblock content %}
+        <div class="ui container">
+            {% block content %}
+            {% endblock content %}
+        </div>     
     </div>
 </body>
 </html>
