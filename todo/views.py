@@ -51,3 +51,32 @@ def todo_detail(request, id):
     todo = get_object_or_404(Todo, pk=id)
     context = {'todo': todo}
     return render(request, 'todo/todo-detail.html', context)
+
+def todo_delete(request, id):
+    todo = get_object_or_404(Todo, pk=id)
+    context = {'todo': todo}
+
+    if request.method == 'POST':
+        todo.delete()
+        return HttpResponseRedirect(reverse('home'))
+    return render(request, 'todo/todo-delete.html', context)
+
+def todo_edit(request, id):
+    todo = get_object_or_404(Todo, pk=id)
+    form = TodoForm(instance=todo)
+    context = {'todo': todo, 'form':form}
+
+    if request.method == 'POST':
+        titles = request.POST.get('title')
+        description = request.POST.get('description')
+        is_completed = request.POST.get('is_completed', False)
+
+        todo.title = titles
+        todo.description = description
+        todo.is_completed = True if is_completed=="on" else False
+        todo.save()
+
+        return HttpResponseRedirect(reverse('todo-detail', kwargs={'id': todo.pk}))
+
+    return render(request, 'todo/todo-edit.html', context)
+
