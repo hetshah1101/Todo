@@ -3,6 +3,7 @@ from .forms import TodoForm
 from .models import Todo
 from django.http import HttpResponseRedirect
 from django.urls import reverse
+from django.contrib import messages
 
 
 # Create your views here.
@@ -43,6 +44,8 @@ def create_todo(request):
         todo.is_completed = True if is_completed=="on" else False
         todo.save()
 
+        messages.add_message(request, messages.SUCCESS, "Todo Task Created")
+
         return HttpResponseRedirect(reverse('todo-detail', kwargs={'id': todo.pk}))
 
     return render(request, 'todo/create-todo.html', context)
@@ -58,6 +61,8 @@ def todo_delete(request, id):
 
     if request.method == 'POST':
         todo.delete()
+        messages.add_message(request, messages.SUCCESS, "Todo deleted successfully")
+
         return HttpResponseRedirect(reverse('home'))
     return render(request, 'todo/todo-delete.html', context)
 
@@ -75,6 +80,9 @@ def todo_edit(request, id):
         todo.description = description
         todo.is_completed = True if is_completed=="on" else False
         todo.save()
+
+        messages.add_message(request, messages.SUCCESS, "Todo edited successfully")
+
 
         return HttpResponseRedirect(reverse('todo-detail', kwargs={'id': todo.pk}))
 

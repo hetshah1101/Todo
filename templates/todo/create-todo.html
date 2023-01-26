@@ -5,6 +5,9 @@
 {% block content %}
 
 <h3>Create Todo</h3>
+
+{% include '_partials/messages.html' %}
+
 <form class="ui form" method="post" action={% url 'create-todo' %} >
     {% csrf_token %} 
     {{form.as_p}}
