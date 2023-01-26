@@ -4,11 +4,32 @@
 
 {% block content %}
 
-<h3>Detail</h3>
-<form class="ui form" method="post" action={% url 'create-todo' %} >
-    {% csrf_token %} 
-    {{form.as_p}}
-</form>
+<h3 class="ui header">Todo Detail</h3>
 
+<div class="ui card">
+    <div class="content">
+        <div class="header">{{todo.title}}</div>
+        <div class="meta">{{todo.created_at}}</div>
+        <div class="description"><p>{{todo.description}}</p></div>
+    </div>
+    <div class="extra content">
+        
+            
+        {% if todo.is_completed %}     
+            <p>
+                <i class="check green"></i>
+                Completed at {{todo.updated_at}}
+            </p>
+
+        {% else %}
+            <p>
+                Not yet completed
+            </p>
+        {% endif %}
+        <a href="" class="ui button primary">Edit</a>
+        <a href="" class="ui button red">Delete this todo</a>
+        
+    </div>
+</div>
 
 {% endblock content %}
