@@ -3,5 +3,57 @@
 {% load static %}
 
 {% block content %}
-HELLO
+
+<h1 class="ui header">My Todos</h1>
+
+
+{% if todos %}
+<table class="ui table">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Description</th>
+            <th>Completed</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        
+        {% for todo in todos  %}
+            <tr>
+                <td>{{todo.title}}</td>
+                <td>{{todo.description}}</td>
+                
+                <td>
+                {% if todo.is_completed %}
+                YES <i class="check icon green"></i>
+                {% else %}
+                NO
+                {% endif %}
+                </td>
+                
+                <td>
+                    <a href="" class="ui button">
+                        <i class="eye icon"></i>
+                    </a>
+                    <a href="" class="ui button">
+                        <i class="pencil icon"></i>
+                    </a>
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>    
+{% else %}
+
+<div class="ui message">
+    <div class="header">
+        No Items Yet
+    </div>
+    <p>You can crea your first todo now <a class="ui button" href={% url 'create-todo' %}>Add Here</a></p>
+</div>
+
+{% endif %}
+    
+
 {% endblock content %}
