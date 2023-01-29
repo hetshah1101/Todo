@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from validate_email import validate_email
 from .models import User
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.urls import reverse
 
 def register(request):
@@ -69,3 +69,9 @@ def login_user(request):
         return redirect(reverse('home'))
 
     return render(request, 'authentication/login.html')
+
+def logout_user(request):
+    logout(request)
+    messages.add_message(request, messages.SUCCESS, "Logout Successful")
+
+    return redirect(reverse('login'))
