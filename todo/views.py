@@ -4,6 +4,7 @@ from .models import Todo
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 
 
 # Create your views here.
@@ -15,6 +16,7 @@ def get_showing_todos(request, todos):
             return todos.filter(is_completed=False)
     return todos
 
+@login_required
 def index(request):
     todos = Todo.objects.filter(owner=request.user)
     
@@ -29,6 +31,7 @@ def index(request):
 
     return render(request, 'todo/index.html', context)
 
+@login_required
 def create_todo(request):
     form = TodoForm()
     context = {'form':form}
@@ -51,22 +54,28 @@ def create_todo(request):
 
     return render(request, 'todo/create-todo.html', context)
 
+@login_required
 def todo_detail(request, id):
     todo = get_object_or_404(Todo, pk=id)
     context = {'todo': todo}
     return render(request, 'todo/todo-detail.html', context)
 
+@login_required
 def todo_delete(request, id):
     todo = get_object_or_404(Todo, pk=id)
     context = {'todo': todo}
 
     if request.method == 'POST':
-        todo.delete()
-        messages.add_message(request, messages.SUCCESS, "Todo deleted successfully")
+        if todo.owner == request.user:
+            todo.delete()
+            messages.add_message(request, messages.SUCCESS, "Todo deleted successfully")
 
-        return HttpResponseRedirect(reverse('home'))
+            return HttpResponseRedirect(reverse('home'))
+        return render(request, 'todo/todo-delete.html', context)
+
     return render(request, 'todo/todo-delete.html', context)
 
+@login_required
 def todo_edit(request, id):
     todo = get_object_or_404(Todo, pk=id)
     form = TodoForm(instance=todo)
@@ -80,12 +89,12 @@ def todo_edit(request, id):
         todo.title = titles
         todo.description = description
         todo.is_completed = True if is_completed=="on" else False
-        todo.save()
+        
+        if todo.owner == request.user:
+            todo.save()
+            messages.add_message(request, messages.SUCCESS, "Todo edited successfully")
 
-        messages.add_message(request, messages.SUCCESS, "Todo edited successfully")
-
-
-        return HttpResponseRedirect(reverse('todo-detail', kwargs={'id': todo.pk}))
-
+            return HttpResponseRedirect(reverse('todo-detail', kwargs={'id': todo.pk}))
+        render(request, 'todo/todo-edit.html', context)
     return render(request, 'todo/todo-edit.html', context)
 
