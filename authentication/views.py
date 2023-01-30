@@ -5,6 +5,41 @@ from .models import User
 from django.contrib.auth import authenticate, login, logout
 from django.urls import reverse
 from helpers.decorators import auth_user_should_not_access
+from django.contrib.sites.shortcuts import get_current_site
+from django.template.loader import render_to_string
+from django.utils.encoding import force_bytes, force_str, DjangoUnicodeDecodeError
+from .utils import generate_token
+from django.core.mail import EmailMessage
+from django.conf import settings
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+import threading
+
+class EmailThread(threading.Thread):
+
+    def __init__(self, email):
+        self.email = email
+        threading.Thread.__init__(self)
+
+    def run(self):
+        self.email.send()
+    
+
+
+
+def send_activation_email(user, request):
+    current_site = get_current_site(request)
+    email_subject = 'Activate your account'
+    email_body = render_to_string('authentication/activate.html', {
+        'user':user,
+        'domain':current_site.domain,
+        'uid':urlsafe_base64_encode(force_bytes(user.pk)),
+        'token': generate_token.make_token(user),
+    })
+
+    email = EmailMessage(subject=email_subject, body=email_body, from_email=settings.EMAIL_FROM_USER, to=[user.email])
+
+    EmailThread(email).start()
+
 
 @auth_user_should_not_access        
 def register(request):
@@ -46,7 +81,9 @@ def register(request):
         user.set_password(password)
         user.save()
 
-        messages.add_message(request, messages.SUCCESS, "Account created, you can login now")
+        send_activation_email(user, request)
+
+        messages.add_message(request, messages.SUCCESS, "Verification Email Sent.. Check your inbox or spam")
         return redirect('login')
 
 
@@ -65,6 +102,10 @@ def login_user(request):
         if not user:
             messages.add_message(request, messages.ERROR, "Invalid Credentials")
             return render(request, 'authentication/login.html', context)
+
+        if not user.is_email_verified:
+            messages.add_message(request, messages.ERROR, "Email is not verified, please check your email inbox")
+            return render(request, 'authentication/login.html', context)
         
         login(request, user)
         messages.add_message(request, messages.SUCCESS, f"Welcome {user.username}")
@@ -78,3 +119,20 @@ def logout_user(request):
     messages.add_message(request, messages.SUCCESS, "Logout Successful")
 
     return redirect(reverse('login'))
+
+def activate_user(request, uidb64, token):
+    try:
+        uid=force_str(urlsafe_base64_decode(uidb64))
+        
+        user = User.objects.get(pk=uid)
+    except Exception as e:
+        user = None
+    
+    if user and generate_token.check_token(user, token):
+        user.is_email_verified=True
+        user.save()
+
+        messages.add_message(request, messages.SUCCESS, 'Email verified, you can login now')
+        return redirect(reverse('login'))
+
+    return render(request, 'authentication/activate-failed.html', {'user':user})
